@@ -15,7 +15,7 @@ namespace SLA
 {
     public partial class fMain : Form
     {
-        сLogFile logFile;
+        LogFile logFile;
         public fMain()
         {
             InitializeComponent();
@@ -40,7 +40,7 @@ namespace SLA
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    logFile = new сLogFile(openFileDialog.FileName);
+                    logFile = new LogFile(openFileDialog.FileName);
                 }
             }
         }

@@ -8,25 +8,93 @@ using System.Threading.Tasks;
 
 namespace SLA
 {
-    class сLogFile
+   
+    class LogFile
     {
         String filePath;
         String fileName;
         int counter = 0;
         string line;
-        List<SearchBuffer> SB;        
+        List<SearchBuffer> SB;      
+
         public string ProgressState;
         public long position;
         long FileSize;
 
+        string[] PatternLike;
+        string[] PatternExcept;
 
-        public сLogFile(string infilePath)
+        public LogFile(string infilePath)
         {
-            filePath = infilePath;
-            FileInfo info = new FileInfo(filePath);            
-            FileSize = info.Length;
-            SB = new List<SearchBuffer>();
+            
+            try
+            {
+                filePath        = infilePath;
+                FileInfo info   = new FileInfo(filePath);
+                FileSize        = info.Length;
+                SB              = new List<SearchBuffer>();
+                PatternLike     = File.ReadAllLines("Pattern.txt");
+                PatternExcept   = File.ReadAllLines("Except.txt");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
+        void Parse(string line)
+        {
+            try
+            {
+                if (line == "")
+                    return;
+                //проверяем на исключения
+                foreach (var item in PatternExcept)
+                {
+                    if (Regex.IsMatch(line, item, RegexOptions.IgnoreCase))
+                    {
+                        return;
+                    }
+                }
+                foreach (var item in PatternLike)
+                {
+                    if (Regex.IsMatch(line, item, RegexOptions.IgnoreCase))
+                    {
+                        return;
+                        if (Regex.IsMatch(line, cPattern.pError, RegexOptions.IgnoreCase))
+                        {
+                            Match m = Regex.Match(line, cPattern.pErrorParse, RegexOptions.IgnoreCase);
+                            if (m.Success)
+                            {
+                                DateTime dt;
+                                DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[6].Value, out dt);
+                                SB.Add(new SearchBuffer(counter, line, 0, 0, "Error", "Error", dt, m.Groups[7].Value, m.Groups[8].Value));
+
+                            }
+                            continue;
+                        }
+                        if (Regex.IsMatch(line, cPattern.pWFProcess, RegexOptions.IgnoreCase))
+                        {
+                            Match m = Regex.Match(line, cPattern.pWFProcessParse, RegexOptions.IgnoreCase);
+                            if (m.Success)
+                            {
+                                DateTime dt;
+                                DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[7].Value, out dt);
+                                SB.Add(new SearchBuffer(counter, line, 0, 0, "WF Process", m.Groups[9].Value, dt, null, null));
+
+                            }
+                            continue;
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
 
         public byte getPosition()
         {
@@ -51,34 +119,7 @@ namespace SLA
                     {
                         counter++;
                         position = reader.BaseStream.Position;
-                        //Console.WriteLine("Read line: " + counter.ToString());
-                        if (Regex.IsMatch(line, cPattern.pError, RegexOptions.IgnoreCase))
-                        {
-                            Match m = Regex.Match(line, cPattern.pErrorParse, RegexOptions.IgnoreCase);
-                            if (m.Success)
-                            {
-                                DateTime dt;
-                                DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[6].Value, out dt);
-                                SB.Add(new SearchBuffer(counter, line, 0, 0, "Error", "Error", dt, m.Groups[7].Value, m.Groups[8].Value));
-                                // sLineResult.Items.Add("Line " + counter + ":\t" + line + "\n");
-                            }
-                            continue;
-                        }
-                        if (Regex.IsMatch(line, cPattern.pWFProcess, RegexOptions.IgnoreCase))
-                        {
-                            Match m = Regex.Match(line, cPattern.pWFProcessParse, RegexOptions.IgnoreCase);
-                            if (m.Success)
-                            {
-                                DateTime dt;
-                                DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[7].Value, out dt);
-                                SB.Add(new SearchBuffer(counter, line, 0, 0, "WF Process", m.Groups[9].Value, dt, null, null));
-                                // sLineResult.Items.Add("Line " + counter + ":\t" + line + "\n");
-                            }
-                            continue;
-                        }
-
-
-
+                        Parse(line);
                     }
                 }
                 ProgressState = "Success";
