@@ -15,14 +15,27 @@ namespace SLA
         String fileName;
         int counter = 0;
         string line;
-        List<SearchBuffer> SB;      
+        List<LineBuffer> SB;      
 
         public string ProgressState;
         public long position;
         long FileSize;
 
-        string[] PatternLike;
-        string[] PatternExcept;
+        List<FileLine> PatternLike;
+        List<FileLine> PatternExcept;
+        Dictionary<string, string> PatternParse;
+
+        struct FileLine
+        {
+            public string Type;
+            public string Line;
+            public FileLine(string type,string line)
+            {
+                Type = type;
+                Line = line;
+            }
+
+        }
 
         public LogFile(string infilePath)
         {
@@ -32,14 +45,40 @@ namespace SLA
                 filePath        = infilePath;
                 FileInfo info   = new FileInfo(filePath);
                 FileSize        = info.Length;
-                SB              = new List<SearchBuffer>();
-                PatternLike     = File.ReadAllLines("Pattern.txt");
-                PatternExcept   = File.ReadAllLines("Except.txt");
+                SB              = new List<LineBuffer>();
+                PatternLike     = LoadPattern("Pattern.txt");
+                PatternExcept   = LoadPattern("Except.txt");
+                PatternParse    = LoadPatternParse("Parse.txt");
             }
             catch (Exception ex)
             {
                 throw ex;
             }
+        }
+
+        Dictionary<string, string> LoadPatternParse(string filename)
+        {
+            Dictionary<string, string> ps = new Dictionary<string, string>();
+            ps.Add("Error", @"^(.*)\t(Error)\t(1)\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})\s*(\d{2}\:\d{2}\:\d{2})\t\(.*\)\s*(.*)\:(.*)(.*)");
+            ps.Add("WFProcess", @"^(.*)\t(.*)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Реализация определения процесса)\s*([A-Za-z\s\-]*)");
+            ps.Add("TaskStep", @"^(TskNav)\t(Oper)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Ядро задач запрошено для перехода к следующему шагу:)\s*(.*).$");
+            return ps;
+        }
+        List<FileLine> LoadPattern(string filename)
+        {
+            List<FileLine> fl = new List<FileLine>();
+            //заглушка
+            if (filename== "Pattern.txt")
+            {
+                fl.Add(new FileLine("Error", @"^(.*)\t(Error)\t(1)"));
+                fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create).*Реализация определения процесса"));
+                fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));
+            }
+            if (filename == "Except.txt")
+            {
+                //fl.Add(new FileLine("", ""));
+            }
+            return fl;
         }
         void Parse(string line)
         {
@@ -50,40 +89,16 @@ namespace SLA
                 //проверяем на исключения
                 foreach (var item in PatternExcept)
                 {
-                    if (Regex.IsMatch(line, item, RegexOptions.IgnoreCase))
+                    if (Regex.IsMatch(line, item.Type, RegexOptions.IgnoreCase))
                     {
                         return;
                     }
                 }
                 foreach (var item in PatternLike)
                 {
-                    if (Regex.IsMatch(line, item, RegexOptions.IgnoreCase))
-                    {
-                        return;
-                        if (Regex.IsMatch(line, cPattern.pError, RegexOptions.IgnoreCase))
-                        {
-                            Match m = Regex.Match(line, cPattern.pErrorParse, RegexOptions.IgnoreCase);
-                            if (m.Success)
-                            {
-                                DateTime dt;
-                                DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[6].Value, out dt);
-                                SB.Add(new SearchBuffer(counter, line, 0, 0, "Error", "Error", dt, m.Groups[7].Value, m.Groups[8].Value));
-
-                            }
-                            continue;
-                        }
-                        if (Regex.IsMatch(line, cPattern.pWFProcess, RegexOptions.IgnoreCase))
-                        {
-                            Match m = Regex.Match(line, cPattern.pWFProcessParse, RegexOptions.IgnoreCase);
-                            if (m.Success)
-                            {
-                                DateTime dt;
-                                DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[7].Value, out dt);
-                                SB.Add(new SearchBuffer(counter, line, 0, 0, "WF Process", m.Groups[9].Value, dt, null, null));
-
-                            }
-                            continue;
-                        }
+                    if (Regex.IsMatch(line, item.Type, RegexOptions.IgnoreCase))
+                    {                        
+                        ParseLineValue(item.Type, line);
                     }
                 }
 
@@ -93,7 +108,33 @@ namespace SLA
                 throw ex;
             }
         }
+        void ParseLineValue(string type,string line)
+        {
+            if (type=="Error")
+            {
+                Match m = Regex.Match(line, PatternParse[type], RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    DateTime dt;
+                    DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[6].Value, out dt);
+                    SB.Add(new LineBuffer(counter, line, 0, 0, "Error", "Error", dt, m.Groups[7].Value, m.Groups[8].Value));
 
+                }
+                return;
+            }
+            if (type == "WFProcess")
+            {
+                Match m = Regex.Match(line, PatternParse[type], RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    DateTime dt;
+                    DateTime.TryParse(m.Groups[5].Value + " " + m.Groups[7].Value, out dt);
+                    SB.Add(new LineBuffer(counter, line, 0, 0, "WF Process", m.Groups[9].Value, dt, null, null));
+
+                }
+                return;
+            }
+        }
 
 
         public byte getPosition()

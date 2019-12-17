@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SLA
 {
     
-    class SearchBuffer
+    class LineBuffer
     {
         long LineNum;
         string Buffer;
@@ -18,7 +18,7 @@ namespace SLA
         DateTime? dt;
         string ErrorCode;
         string ErrorMessage;
-        public SearchBuffer(long cLineNum, string str, int iLevel, int iParentLevel, string sType,string sName,DateTime? dDt, string sErrorCode,string sErrorMessage)
+        public LineBuffer(long cLineNum, string str, int iLevel, int iParentLevel, string sType,string sName,DateTime? dDt, string sErrorCode,string sErrorMessage)
         {
             LineNum = cLineNum;
             Buffer = str;
