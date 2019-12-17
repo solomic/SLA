@@ -18,7 +18,6 @@ namespace SLA
         static public readonly string pWFProcessParse = @"^(.*)\t(.*)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Реализация определения процесса)\s*([A-Za-z\s\-]*)";
         
         //StpExec	Create	4	0000450a5ded113c:0	2019-12-09 08:08:16	Реализация определения шага (Log On?).
-
         //task
         static public readonly string pTaskStep = @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу";
         static public readonly string pTaskStepParse = @"^(TskNav)\t(Oper)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Ядро задач запрошено для перехода к следующему шагу:)\s*(.*).$";
