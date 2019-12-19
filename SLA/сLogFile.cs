@@ -71,7 +71,7 @@ namespace SLA
             if (filename== "Pattern.txt")
             {
                 fl.Add(new FileLine("Error", @"^(.*)\t(Error)\t(1)"));
-                fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create).*Реализация определения процесса"));
+                fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create)(.*)(Реализация определения процесса)(.*)"));
                 fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));
             }
             if (filename == "Except.txt")
@@ -80,25 +80,27 @@ namespace SLA
             }
             return fl;
         }
-        void Parse(string line)
+        bool Parse(string line)
         {
+            bool ret = false;
             try
-            {
+            {                
                 if (line == "")
-                    return;
+                    return false;
                 //проверяем на исключения
                 foreach (var item in PatternExcept)
                 {
                     if (Regex.IsMatch(line, item.Type, RegexOptions.IgnoreCase))
                     {
-                        return;
+                        return false;
                     }
                 }
                 foreach (var item in PatternLike)
                 {
                     if (Regex.IsMatch(line, item.Type, RegexOptions.IgnoreCase))
-                    {                        
-                        ParseLineValue(item.Type, line);
+                    {
+                        return true;
+                       // ParseLineValue(item.Type, line);
                     }
                 }
 
@@ -107,6 +109,7 @@ namespace SLA
             {
                 throw ex;
             }
+            return ret;
         }
         void ParseLineValue(string type,string line)
         {
@@ -148,21 +151,28 @@ namespace SLA
             {
                 ProgressState = "Analyzing";
                 Console.WriteLine("Begin analyze: " + DateTime.Now.ToString());
-                fileName = Path.GetFileName(filePath);               
+                fileName = Path.GetFileName(filePath);
+                var FileWrite=Path.GetDirectoryName(filePath)+@"\" + Path.GetFileNameWithoutExtension(filePath) + "_lite.txt";
                
                 //Read the contents of the file into a stream
-                var fileStream = File.OpenRead(filePath);                
-
+                var fileStream = File.OpenRead(filePath);
+                var fileStreamLite = File.OpenWrite(FileWrite);
+                StreamWriter writer = new StreamWriter(fileStreamLite);
                 using (StreamReader reader = new StreamReader(fileStream))
                 {
-                    
                     while ((line = reader.ReadLine()) != null)
                     {
                         counter++;
                         position = reader.BaseStream.Position;
-                        Parse(line);
+                        if (Parse(line))
+                        {
+                            writer.WriteLine(line);
+                        }
                     }
+                    writer.Flush();
+                    writer.Close();
                 }
+                
                 ProgressState = "Success";
 
             }
