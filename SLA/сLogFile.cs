@@ -72,16 +72,23 @@ namespace SLA
             if (filename== "Pattern.txt")
             {
                 fl.Add(new FileLine("Error", @"^(.*)\t(Error)\t(1)"));
-                //StpExec	Task
-                //StpExec	TaskArg
-                //EngInv	EngInv
-                //EngInv	Arg
-                //PrcExec	PrcExec
+
+                fl.Add(new FileLine("StpExec_Task", @"^(StpExec)\t(Task)"));
+                fl.Add(new FileLine("StpExec_End", @"^(StpExec)\t(End)"));
+                fl.Add(new FileLine("StpExec_TaskArg", @"^(StpExec)\t(TaskArg)"));
+                fl.Add(new FileLine("StpExec_Create", @"^(StpExec)\t(Create)"));
+                fl.Add(new FileLine("StpExec_Cond", @"^(StpExec)\t(Cond)"));
+                fl.Add(new FileLine("EngInv_EngInv", @"^(EngInv)\t(EngInv)"));
+                fl.Add(new FileLine("EngInv_Arg", @"^(EngInv)\t(Arg)"));
+                fl.Add(new FileLine("PrcExec_PrcExec", @"^(PrcExec)\t(PrcExec)"));                
                 fl.Add(new FileLine("TskNav_NavPath", @"^(TskNav)\t(NavPath)"));
-                fl.Add(new FileLine("TskNav_NavPath", @"^(TskNav)\t(Oper)"));
-                fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create)(.*)(Реализация определения процесса)(.*)"));
+                fl.Add(new FileLine("TskNav_Oper", @"^(TskNav)\t(Oper)"));
+                fl.Add(new FileLine("PrcExec_Create", @"^(PrcExec)\t(Create)"));
+                fl.Add(new FileLine("PrcExec_PropSet", @"^(PrcExec)\t(PropSet)"));
+                
+                //fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create)(.*)(Реализация определения процесса)(.*)"));
                 fl.Add(new FileLine("WFStep", @"^(.*)\t(Create)(.*)(Реализация определения шага)(.*)"));
-                fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));                
+                //fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));                
             }
             if (filename == "Except.txt")
             {
