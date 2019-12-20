@@ -72,6 +72,13 @@ namespace SLA
             if (filename== "Pattern.txt")
             {
                 fl.Add(new FileLine("Error", @"^(.*)\t(Error)\t(1)"));
+                //StpExec	Task
+                //StpExec	TaskArg
+                //EngInv	EngInv
+                //EngInv	Arg
+                //PrcExec	PrcExec
+                fl.Add(new FileLine("TskNav_NavPath", @"^(TskNav)\t(NavPath)"));
+                fl.Add(new FileLine("TskNav_NavPath", @"^(TskNav)\t(Oper)"));
                 fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create)(.*)(Реализация определения процесса)(.*)"));
                 fl.Add(new FileLine("WFStep", @"^(.*)\t(Create)(.*)(Реализация определения шага)(.*)"));
                 fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));                
