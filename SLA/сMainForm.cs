@@ -52,7 +52,7 @@ namespace SLA
             task1.Start();
             
             //task1.Wait();
-            MessageBox.Show(logFile.ProgressState);
+            //MessageBox.Show(logFile.ProgressState);
             
             
             //analyzeFile(fileName);

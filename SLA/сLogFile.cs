@@ -61,6 +61,7 @@ namespace SLA
             Dictionary<string, string> ps = new Dictionary<string, string>();
             ps.Add("Error", @"^(.*)\t(Error)\t(1)\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})\s*(\d{2}\:\d{2}\:\d{2})\t\(.*\)\s*(.*)\:(.*)(.*)");
             ps.Add("WFProcess", @"^(.*)\t(.*)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Реализация определения процесса)\s*([A-Za-z\s\-]*)");
+            ps.Add("WFStep", @"^(.*)\t(.*)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Реализация определения шага)\s*([A-Za-z\s\-]*)");
             ps.Add("TaskStep", @"^(TskNav)\t(Oper)\t(\d{1})\t([\d|\w]{16}\:\d{1})\t(\d{4}\-\d{2}\-\d{2})(\s*)(\d{2}\:\d{2}\:\d{2})\t(Ядро задач запрошено для перехода к следующему шагу:)\s*(.*).$");
             return ps;
         }
@@ -72,11 +73,13 @@ namespace SLA
             {
                 fl.Add(new FileLine("Error", @"^(.*)\t(Error)\t(1)"));
                 fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create)(.*)(Реализация определения процесса)(.*)"));
-                fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));
+                fl.Add(new FileLine("WFStep", @"^(.*)\t(Create)(.*)(Реализация определения шага)(.*)"));
+                fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));                
             }
             if (filename == "Except.txt")
             {
-                //fl.Add(new FileLine("", ""));
+                fl.Add(new FileLine("Except", @"^(.*)(model\.cpp\s\(10057\)\))\s(SBL-DAT-00222)"));
+                
             }
             return fl;
         }
@@ -90,14 +93,14 @@ namespace SLA
                 //проверяем на исключения
                 foreach (var item in PatternExcept)
                 {
-                    if (Regex.IsMatch(line, item.Type, RegexOptions.IgnoreCase))
+                    if (Regex.IsMatch(line, item.Line, RegexOptions.IgnoreCase))
                     {
                         return false;
                     }
                 }
                 foreach (var item in PatternLike)
                 {
-                    if (Regex.IsMatch(line, item.Type, RegexOptions.IgnoreCase))
+                    if (Regex.IsMatch(line, item.Line, RegexOptions.IgnoreCase))
                     {
                         return true;
                        // ParseLineValue(item.Type, line);
@@ -157,9 +160,10 @@ namespace SLA
                 //Read the contents of the file into a stream
                 var fileStream = File.OpenRead(filePath);
                 var fileStreamLite = File.OpenWrite(FileWrite);
+                
                 StreamWriter writer = new StreamWriter(fileStreamLite);
                 using (StreamReader reader = new StreamReader(fileStream))
-                {
+                {                    
                     while ((line = reader.ReadLine()) != null)
                     {
                         counter++;
@@ -168,13 +172,14 @@ namespace SLA
                         {
                             writer.WriteLine(line);
                         }
+                        
                     }
                     writer.Flush();
                     writer.Close();
                 }
                 
                 ProgressState = "Success";
-
+                Console.WriteLine("End analyze: " + DateTime.Now.ToString());
             }
             catch (Exception err)
             {
