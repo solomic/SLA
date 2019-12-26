@@ -21,6 +21,8 @@ namespace SLA
             InitializeComponent();
         }
 
+        
+
         private void bOpen_Click(object sender, EventArgs e)
         {
             openFile();
@@ -68,6 +70,16 @@ namespace SLA
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
             MessageBox.Show(logFile.getPosition().ToString()+" "+ logFile.ProgressState);
+            
+        }
+        void ShowPosition()
+        {
+            tAnalyze.Value = logFile.getPosition();
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+
         }
     }
 }

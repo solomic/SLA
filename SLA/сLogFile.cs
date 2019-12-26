@@ -72,6 +72,7 @@ namespace SLA
             if (filename== "Pattern.txt")
             {
                 fl.Add(new FileLine("Error", @"^(.*)\t(Error)\t(1)"));
+                fl.Add(new FileLine("Error_Adpt", @"^(.*)\t(EAISiebAdptErr)\t(1)"));
 
                 fl.Add(new FileLine("StpExec_Task", @"^(StpExec)\t(Task)"));
                 fl.Add(new FileLine("StpExec_End", @"^(StpExec)\t(End)"));
@@ -84,8 +85,8 @@ namespace SLA
                 fl.Add(new FileLine("TskNav_NavPath", @"^(TskNav)\t(NavPath)"));
                 fl.Add(new FileLine("TskNav_Oper", @"^(TskNav)\t(Oper)"));
                 fl.Add(new FileLine("PrcExec_Create", @"^(PrcExec)\t(Create)"));
-                fl.Add(new FileLine("PrcExec_PropSet", @"^(PrcExec)\t(PropSet)"));
-                
+                fl.Add(new FileLine("PrcExec_PropSet", @"^(PrcExec)\t(PropSet)"));                
+                //^(EngInv)\t(Arg)(.|\n)*?\n\n
                 //fl.Add(new FileLine("WFProcess", @"^(.*)\t(Create)(.*)(Реализация определения процесса)(.*)"));
                 fl.Add(new FileLine("WFStep", @"^(.*)\t(Create)(.*)(Реализация определения шага)(.*)"));
                 //fl.Add(new FileLine("TaskStep", @"^(TskNav)\t(Oper).*Ядро задач запрошено для перехода к следующему шагу"));                
@@ -177,16 +178,22 @@ namespace SLA
                 
                 StreamWriter writer = new StreamWriter(fileStreamLite);
                 using (StreamReader reader = new StreamReader(fileStream))
-                {                    
+                {
+                    var AllLine = "";
                     while ((line = reader.ReadLine()) != null)
                     {
                         counter++;
                         position = reader.BaseStream.Position;
-                        if (Parse(line))
+                        if (line != "")
                         {
-                            writer.WriteLine(line);
+                            AllLine += (line+Environment.NewLine);
+                            continue;
                         }
-                        
+                        if (Parse(AllLine))
+                        {
+                            writer.WriteLine(AllLine);
+                        }
+                        AllLine = "";
                     }
                     writer.Flush();
                     writer.Close();
@@ -194,6 +201,8 @@ namespace SLA
                 
                 ProgressState = "Success";
                 Console.WriteLine("End analyze: " + DateTime.Now.ToString());
+                Mess.MessageSuccess();
+                
             }
             catch (Exception err)
             {
