@@ -189,6 +189,8 @@ namespace SLA
                             AllLine += (line+Environment.NewLine);
                             continue;
                         }
+                        if (AllLine!="")
+                            AllLine = AllLine.Substring(0, AllLine.Length - 1);
                         if (Parse(AllLine))
                         {
                             writer.WriteLine(AllLine);
